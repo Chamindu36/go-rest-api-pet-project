@@ -2,77 +2,72 @@ package main
 
 import (
 	"encoding/json"
+	"golang-rest-api/entity"
+	"golang-rest-api/repository"
+	"math/rand"
 	"net/http"
 )
 
-type Post struct {
-	Id    int    `json:"id"`
-	Title string `json:"title"`
-	Text  string `json:"text"`
-}
-
 var (
-	posts []Post
+	repo repository.PostRepository = repository.NewPostRepository()
 )
 
-func init() {
-	posts = []Post{Post{Id: 1, Title: "Title 1", Text: "Text 1"}}
-}
-
+// getPosts: Get all the posts
 func getPosts(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 
-	result, err := json.Marshal(posts)
-	if err != nil {
+	// Get all the posts from DB
+	posts, err0 := repo.FindAll()
+	if err0 != nil {
 		response.WriteHeader(http.StatusInternalServerError)
-		_, err2 := response.Write([]byte(`{"error": "Error marshalling the posts array"}`))
-		if err2 != nil {
+		_, err1 := response.Write([]byte(`{"error": "Error getting the posts from the database"}`))
+		if err1 != nil {
 			return
 		}
 		return
 	}
+
 	// Return the posts array as a JSON response
 	response.WriteHeader(http.StatusOK)
-	_, err = response.Write(result)
+	err := json.NewEncoder(response).Encode(posts)
 	if err != nil {
 		return
 	}
 }
 
+// addPost: Add a new post
 func addPost(response http.ResponseWriter, request *http.Request) {
-	var post Post
+	var post entity.Post
+
 	// Decode the incoming post json and assign to Post struct
 	err := json.NewDecoder(request.Body).Decode(&post)
 	if err != nil {
-		return
-	}
-
-	// Append the post to the posts array
-	posts = append(posts, post)
-
-	// Return the posts array as a JSON response
-	response.WriteHeader(http.StatusOK)
-	result, err := json.Marshal(posts)
-	if err != nil {
 		response.WriteHeader(http.StatusInternalServerError)
-		_, err2 := response.Write([]byte(`{"error": "Error marshalling the posts array"}`))
-		if err2 != nil {
+		_, err1 := response.Write([]byte(`{"error": "Error unmarshalling the request"}`))
+		if err1 != nil {
 			return
 		}
 		return
 	}
 
 	// Set the id of the post
-	post.Id = len(posts) + 1
+	post.Id = rand.Int63()
 
-	// Append the post to the posts array
-	posts = append(posts, post)
+	_, err2 := repo.Save(&post)
+	if err2 != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		_, err3 := response.Write([]byte(`{"error": "Error saving the post"}`))
+		if err3 != nil {
+			return
+		}
+		return
+	}
 
 	// Return the posts array as a JSON response
 	response.Header().Set("Content-Type", "application/json")
 	response.WriteHeader(http.StatusOK)
-	_, err = response.Write(result)
-	if err != nil {
+	err4 := json.NewEncoder(response).Encode(post)
+	if err4 != nil {
 		return
 	}
 }
