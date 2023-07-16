@@ -2,28 +2,27 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"log"
+	"golang-rest-api/controller"
+	"golang-rest-api/router"
 	"net/http"
 )
 
+var (
+	postController controller.PostController = controller.NewPostController()
+	httpRouter     router.Router             = router.NewMuxRouter()
+)
+
 func main() {
-	// Create a new router
-	var router = mux.NewRouter()
 
 	// Define the port
 	const port = ":8000"
 
-	router.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
-		fmt.Fprintln(response, "Up and Running...")
+	httpRouter.GET("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Up and running...")
 	})
 
-	// Handle get request at /posts
-	router.HandleFunc("/posts", getPosts).Methods("GET")
-	// Handle post request at /posts
-	router.HandleFunc("/posts", addPost).Methods("POST")
+	httpRouter.GET("/posts", postController.GetPosts)
+	httpRouter.POST("/posts", postController.AddPost)
 
-	// Start the server
-	log.Println("Server is running on port", port)
-	log.Fatalln(http.ListenAndServe(port, router))
+	httpRouter.SERVE(port)
 }
