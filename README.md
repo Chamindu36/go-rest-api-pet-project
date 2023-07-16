@@ -50,6 +50,10 @@ The project follows a clean architecture approach to maintain modularity and sep
 7. `entity/post.go`: Defines the structure and properties of the post entity.
 8. `errors/service-error.go`: Defines custom error types and handles service-level errors.
 
+**Here is the image of the architecture diagram for this project:**
+
+![IMG_0027.jpg](IMG_0027.jpg)
+
 Additionally, the project focuses on writing clean and maintainable code, adhering to best practices and design patterns commonly used in Go web development. This includes proper error handling, logging, and separation of concerns to ensure the codebase is scalable and extensible.
 
 Overall, this Go Lang web development project leverages the power of Gorilla mux and Firestore to create a reliable, scalable, and performant REST API with simple CRUD operations. The end result is a well-designed and robust web application ready to handle a variety of client requests and efficiently manage data using the power of Go and the features provided by Firestore.
